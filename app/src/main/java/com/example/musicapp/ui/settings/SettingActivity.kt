@@ -53,7 +53,6 @@ class SettingActivity : AppCompatActivity() {
             recreate() // cập nhật lại Activity để thấy thay đổi ngay
         }
 
-        // --- giữ nguyên logic cũ ---
         updateUI()
     }
 
