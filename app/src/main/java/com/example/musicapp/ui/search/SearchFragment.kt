@@ -328,7 +328,6 @@ class SearchFragment : Fragment() {
     private fun performSearch(query: String) {
         val qNorm = normalize(query)
         if (qNorm.isEmpty()) {
-            // nếu rỗng, reset UI
             suggestions.clear()
             suggestionAdapter?.notifyDataSetChanged()
             rvArtistResults.visibility = View.GONE
@@ -336,71 +335,59 @@ class SearchFragment : Fragment() {
             return
         }
 
-        // Tạo danh sách pair(song, score)
         val scored = mutableListOf<Pair<Song, Int>>()
 
         allSongs.forEach { song ->
             val titleNorm = normalize(song.title)
             var score = 0
 
-            // highest priority: title startsWith (toàn bộ title bắt đầu)
-            if (titleNorm.startsWith(qNorm)) {
-                score += 120
-            }
-            // title một từ bắt đầu bằng query (ví dụ query "qu" match "Quên Anh Đi")
-            if (wordStartsWith(song.title, qNorm)) {
-                score += 100
-            }
-            // title chứa query anywhere
-            if (titleNorm.contains(qNorm)) {
-                score += 70
-            }
+            if (titleNorm.startsWith(qNorm)) score += 120
+            if (wordStartsWith(song.title, qNorm)) score += 100
+            if (titleNorm.contains(qNorm)) score += 70
 
-            // artist match: nếu một artist fullName startsWith query
             val artistMatchStarts = song.artist.any { normalize(it.fullName).startsWith(qNorm) }
             val artistMatchContains = song.artist.any { normalize(it.fullName).contains(qNorm) }
-            if (artistMatchStarts) score += 90
-            else if (artistMatchContains) score += 60
+            if (artistMatchStarts) score += 90 else if (artistMatchContains) score += 60
 
-            // topic match
             val topicMatch = song.topic.any { normalize(it).contains(qNorm) }
             if (topicMatch) score += 40
 
-            // nếu có ít nhất 1 điểm thì add
-            if (score > 0) {
-                scored.add(song to score)
-            }
+            if (score > 0) scored.add(song to score)
         }
 
-        // Sắp xếp theo score desc, nếu bằng nhau ưu tiên theo title alphabetical
         val sorted = scored
             .sortedWith(compareByDescending<Pair<Song, Int>> { it.second }
                 .thenBy { normalize(it.first.title) })
             .map { it.first }
 
-        // Nếu muốn include songs that matched only by artist (but not title),
-        // đảm bảo họ vẫn xuất hiện vì chúng đã được tính điểm ở phần artistMatch.
+        // ==================== NO RESULT HANDLING ====================
+        val matchedArtists = allArtists.filter { normalize(it.fullName).contains(qNorm) }
+        if (sorted.isEmpty() && matchedArtists.isEmpty()) {
+            Toast.makeText(requireContext(), "❌ Không có kết quả tìm kiếm", Toast.LENGTH_SHORT).show()
 
-        // Build suggestions list: lấy title từ sorted, distinct theo title, lấy top 10
+            suggestions.clear()
+            suggestionAdapter?.notifyDataSetChanged()
+
+            rvArtistResults.visibility = View.GONE
+            tvArtistResultsTitle.visibility = View.GONE
+            return
+        }
+        // ==================== END ====================
+
+
         suggestions.clear()
         suggestions.addAll(sorted.map { it.title }.distinct().take(10))
-        suggestionAdapter?.notifyDataSetChanged()
         suggestionAdapter?.notifyDataSetChanged()
 
         etSearch.postDelayed({
             if (etSearch.isFocused && suggestions.isNotEmpty()) {
-                try {
-                    etSearch.showDropDown()
-                } catch (_: Exception) {}
+                try { etSearch.showDropDown() } catch (_: Exception) {}
             }
-        }, 120)   // 120ms để layout ổn định
+        }, 120)
 
-        // Artist results: tìm artists matching (hiển thị list phía dưới)
-        val matchedArtists = allArtists.filter { normalize(it.fullName).contains(qNorm) }
         if (matchedArtists.isNotEmpty()) {
             rvArtistResults.visibility = View.VISIBLE
             tvArtistResultsTitle.visibility = View.VISIBLE
-            // cập nhật adapter của artist (SearchArtistAdapter) nếu dùng
             (rvArtistResults.adapter as? SearchArtistAdapter)?.update(matchedArtists)
         } else {
             rvArtistResults.visibility = View.GONE
