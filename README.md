@@ -140,7 +140,7 @@ Prerequisites
 - Android SDK matching project's compile/target API
 
 Quick setup
-1. git clone https://github.com/minhnghi123/kotlin-music-app-PN.git
+1. git clone https://github.com/hongphuc2004/kotlin-music-app-PN
 2. Open the project in Android Studio and let Gradle sync.
 3. Add or update screenshots in /screenshots/ or keep using the user-attachment links.
 4. Run on a device/emulator.
