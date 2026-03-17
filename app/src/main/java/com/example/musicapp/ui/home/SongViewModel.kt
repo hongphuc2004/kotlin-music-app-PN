@@ -36,8 +36,8 @@ class SongViewModel : ViewModel() {
                 if (!query.isNullOrEmpty()) {
                     val filtered = list.filter { song ->
                         song.title.contains(query, true) ||
-                                song.album.contains(query, true) ||
-                                song.artist.toString().contains(query, true)
+                        song.album.contains(query, true) ||
+                        song.artist.any { it.fullName.contains(query, true) }
                     }
                     _filteredSongs.postValue(filtered)
                 } else {

@@ -2,24 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
     <!-- Profile Header -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="24dp"
-        android:paddingBottom="24dp">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/ivAvatar"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@mipmap/ic_launcher_round"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:src="@drawable/ic_user"
             android:scaleType="centerCrop"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/circle_bg"/>
+            android:layout_centerHorizontal="true"/>
     </RelativeLayout>
 
     <!-- Username -->
@@ -28,6 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Username"
+        android:textColor="?android:textColorPrimary"
         android:textSize="22sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"
@@ -40,7 +37,7 @@
         android:layout_height="wrap_content"
         android:text="Email"
         android:textSize="16sp"
-        android:textColor="#666"
+        android:textColor="?android:textColorPrimary"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"/>
 
@@ -64,8 +61,10 @@
         android:layout_height="wrap_content"
         android:text="Cài đặt"
         android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
         android:textStyle="bold"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="16dp"
+        android:layout_marginLeft="20dp"/>
 
     <!-- Ví dụ vài item setting -->
     <TextView
@@ -74,8 +73,11 @@
         android:layout_height="wrap_content"
         android:text="Quản lý tài khoản"
         android:padding="12dp"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="16sp"
         android:background="?attr/selectableItemBackground"
-        android:clickable="true" />
+        android:clickable="true"
+        android:layout_marginLeft="25dp"/>
 
     <TextView
         android:id="@+id/tvSecurity"
@@ -83,8 +85,34 @@
         android:layout_height="wrap_content"
         android:text="Bảo mật"
         android:padding="12dp"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="16sp"
         android:background="?attr/selectableItemBackground"
-        android:clickable="true" />
+        android:clickable="true"
+        android:layout_marginLeft="25dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:layout_marginLeft="25dp">
+
+        <TextView
+            android:id="@+id/tvDarkModeLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Chế độ tối"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="16sp" />
+
+        <Switch
+            android:id="@+id/switchDarkMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
 
     <!-- Nút đăng xuất -->
     <Button
@@ -94,6 +122,8 @@
         android:text="Đăng xuất"
         android:backgroundTint="@android:color/holo_red_light"
         android:textColor="@android:color/white"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="24dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"/>
 
 </LinearLayout>

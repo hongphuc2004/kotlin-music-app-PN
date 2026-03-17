@@ -1,43 +1,163 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <AutoCompleteTextView
-        android:id="@+id/etSearch"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tìm bài hát, nghệ sĩ, album..."
-        android:drawableStart="@drawable/ic_search"
-        android:imeOptions="actionSearch"
-        android:inputType="text"
-        android:singleLine="true"
-        android:padding="12dp"
-        android:background="@drawable/bg_search"
-        android:layout_marginTop="35dp"/>
+        android:padding="16dp">
 
+        <!-- 👇 Search bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="35dp">
 
-    <Spinner
-        android:id="@+id/spinnerFilter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"/>
+            <AutoCompleteTextView
+                android:id="@+id/etSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/search_box_background"
+                android:background="@drawable/bg_search"
+                android:hint="Tìm bài hát, nghệ sĩ, album..."
+                android:textColor="@color/textColorPrimary"
+                android:textColorHint="@color/textColorSecondary"
+                android:drawableStart="@drawable/ic_search"
+                android:drawableTint="@color/search_icon_dark"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:singleLine="true"
+                android:padding="12dp"
+                android:dropDownHeight="wrap_content"
+                android:dropDownVerticalOffset="8dp"
+                android:dropDownAnchor="@id/etSearch"
+                android:overScrollMode="never"
+                android:focusableInTouchMode="true"/>
 
-    <TextView
-        android:id="@+id/tvNoResult"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Không có kết quả tìm kiếm"
-        android:gravity="center"
-        android:visibility="gone"
-        android:textSize="16sp"
-        android:textColor="@android:color/darker_gray"
-        android:padding="16dp"/>
+            <ImageButton
+                android:id="@+id/btnVoiceSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Voice Search"
+                android:scaleX="1.1"
+                android:scaleY="1.1"
+                app:tint="@color/textColorPrimary"
+                android:src="@drawable/ic_mic" />
+        </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvSearchResults"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="12dp"/>
-</LinearLayout>
+        <!-- Topic layout (mặc định hiển thị) -->
+        <LinearLayout
+            android:id="@+id/layoutTopics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chủ đề nổi bật"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/textColorPrimary" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTopics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:overScrollMode="never"/>
+        </LinearLayout>
+
+        <!-- Search Mode Views (mặc định ẩn) -->
+        <!-- Đề xuất cho bạn -->
+        <TextView
+            android:id="@+id/tvSuggestionsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đề xuất cho bạn"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/textColorPrimary"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/layoutSuggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginHorizontal="10dp"
+            app:flexWrap="wrap"
+            app:flexDirection="row"
+            app:alignItems="flex_start"
+            app:justifyContent="flex_start"
+            android:background="@android:color/transparent"
+            android:visibility="gone" />
+
+        <!-- Tìm kiếm gần đây -->
+        <TextView
+            android:id="@+id/tvRecentSearchesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tìm kiếm gần đây"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/textColorPrimary"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvClearRecent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="XÓA"
+            android:textColor="@color/textColorPrimary"
+            android:textStyle="bold"
+            android:layout_gravity="end"
+            android:layout_marginTop="-20dp"
+            android:paddingEnd="8dp"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRecentSearches"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <!-- ⭐ Nghệ sĩ tìm kiếm ⭐ -->
+        <TextView
+            android:id="@+id/tvArtistResultsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nghệ sĩ"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:paddingStart="4dp"
+            android:paddingTop="20dp"
+            android:visibility="gone"
+            android:textColor="@color/textColorPrimary" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvArtistResults"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="20dp"
+            android:scrollbars="none"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

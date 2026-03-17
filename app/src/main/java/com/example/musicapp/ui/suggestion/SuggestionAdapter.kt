@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.media3.common.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.musicapp.R
@@ -40,7 +41,7 @@ class SuggestionAdapter(
     override fun onBindViewHolder(holder: SuggestionVH, position: Int) {
         val song = items[position]
         holder.txtTitle.text = song.title
-        holder.txtArtist.text = song.artist.fullName
+        holder.txtArtist.text = song.artist.firstOrNull()?.fullName ?: "Unknown Artist"
 
         Glide.with(holder.itemView)
             .load(song.coverImage)
@@ -71,5 +72,9 @@ class SuggestionAdapter(
     fun submit(newItems: List<Song>) {
         items = newItems
         notifyDataSetChanged()
+    }
+
+    fun getAllSongs(): List<Song> {
+        return items
     }
 }

@@ -1,6 +1,8 @@
 package com.example.musicapp.ui.home
 
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.EditText
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -37,6 +40,7 @@ import com.example.musicapp.ui.playlists.PlaylistAdapter
 import com.example.musicapp.ui.suggestion.SuggestionAdapter
 import com.example.musicapp.utils.PreferenceHelper
 import com.example.myapp.SettingActivity
+import com.example.musicapp.ui.common.UniversalSongAdapter
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -44,7 +48,7 @@ import retrofit2.Response
 class HomeFragment : Fragment() {
 
     private lateinit var rv: RecyclerView
-    private lateinit var adapter: SongAdapter
+    private lateinit var adapter: UniversalSongAdapter
     private lateinit var viewModel: SongViewModel
     private val playerVM: com.example.musicapp.ui.player.PlayerViewModel by activityViewModels()
     private lateinit var favoriteRepository: FavoriteSongsRepository
@@ -70,29 +74,30 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize repository
         favoriteRepository = FavoriteSongsRepository()
 
         // Playlist section
         rv = view.findViewById(R.id.rvPlaylists)
         rv.layoutManager = LinearLayoutManager(requireContext())
-        adapter = SongAdapter(emptyList()) { song -> playerVM.play(song) }
-//        showplaylist dialog
-        adapter.setOnAddToPlaylistClickListener { song ->
-            showPlaylistDialog(song)
-        }
-        // Set up heart click listener for favorites
-        adapter.setOnHeartClickListener { song ->
-            toggleFavorite(song)
-        }
+        
+        adapter = UniversalSongAdapter(
+            items = emptyList(),
+            onClick = { song -> 
+                // Pass entire song list as queue
+                playerVM.play(song, adapter.getAllSongs())
+            },
+            onAddToPlaylist = { song -> showPlaylistDialog(song) },
+            onToggleFavorite = { song -> toggleFavorite(song) }
+        )
         rv.adapter = adapter
 
         viewModel = ViewModelProvider(this)[SongViewModel::class.java]
         viewModel.songs.observe(viewLifecycleOwner) { list ->
-            adapter.submit(list)
+            adapter.updateData(list)
         }
         viewModel.error.observe(viewLifecycleOwner) { err ->
             err?.let { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
@@ -106,14 +111,15 @@ class HomeFragment : Fragment() {
         rvSuggestions = view.findViewById(R.id.rvSuggestions)
         val layoutManager = GridLayoutManager(
             requireContext(),
-            3, // 3 item dọc
+            3,
             RecyclerView.HORIZONTAL,
             false
         )
         rvSuggestions.layoutManager = layoutManager
 
         suggestionAdapter = SuggestionAdapter(emptyList()) { song ->
-            (activity as? MainActivity)?.showMiniPlayer(song)
+            // Pass suggestion list as queue
+            playerVM.play(song, suggestionAdapter.getAllSongs())
         }
         suggestionAdapter.setOnAddToPlaylistClickListener { song ->
             showPlaylistDialog(song)
@@ -130,19 +136,35 @@ class HomeFragment : Fragment() {
                 call: Call<SongListResponse>,
                 response: Response<SongListResponse>
             ) {
+                android.util.Log.d("HomeFragment", "=== Suggestions API Response ===")
+                android.util.Log.d("HomeFragment", "Response code: ${response.code()}")
+                android.util.Log.d("HomeFragment", "Response body: ${response.body()}")
+                
                 if (response.isSuccessful && response.body()?.data != null) {
                     val songs = response.body()!!.data
+                    android.util.Log.d("HomeFragment", "Loaded ${songs.size} suggested songs")
+                    
+                    // Log artist của 2 bài đầu
+                    songs.take(2).forEach { song ->  // 👈 Sửa từ "=>" thành "->"
+                        android.util.Log.d("HomeFragment", "Song: ${song.title}")
+                        android.util.Log.d("HomeFragment", "  Artists: ${song.artist.size} items")
+                        song.artist.forEach { artist ->
+                            android.util.Log.d("HomeFragment", "    - ${artist.fullName}")
+                        }
+                    }
+                    
                     suggestionAdapter.submit(songs)
                 } else {
-                    Toast.makeText(requireContext(), "Không có dữ liệu gợi ý", Toast.LENGTH_SHORT)
-                        .show()
+                    android.util.Log.e("HomeFragment", "No suggestion data or failed")
+                    Toast.makeText(requireContext(), "Không có dữ liệu gợi ý", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<SongListResponse>, t: Throwable) {
+                android.util.Log.e("HomeFragment", "API lỗi: ${t.message}", t)
+                t.printStackTrace()
                 if (isAdded) {
-                    Toast.makeText(requireContext(), "API lỗi: ${t.message}", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(requireContext(), "API lỗi: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -154,8 +176,8 @@ class HomeFragment : Fragment() {
         tvWelcome = view.findViewById(R.id.tvWelcome)
         tvUserName = view.findViewById(R.id.tvUserName)
         iconBell = view.findViewById(R.id.iconBell)
-        iconSetting = view.findViewById(R.id.iconSetting)
         userInfoLayout = view.findViewById(R.id.userInfoLayout)
+        iconSetting = view.findViewById(R.id.iconSetting)
 
         updateHeaderUI()
 
@@ -215,6 +237,29 @@ class HomeFragment : Fragment() {
         tvViewAll.setOnClickListener {
             Toast.makeText(requireContext(), "View All clicked", Toast.LENGTH_SHORT).show()
         }
+
+        // Register receiver for next/prev from notification
+        val filter = android.content.IntentFilter().apply {
+            addAction("com.example.musicapp.ACTION_NEXT_SONG")
+            addAction("com.example.musicapp.ACTION_PREV_SONG")
+        }
+        requireActivity().registerReceiver(musicControlReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+    }
+
+    private val musicControlReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                "com.example.musicapp.ACTION_NEXT_SONG" -> playerVM.playNext()
+                "com.example.musicapp.ACTION_PREV_SONG" -> playerVM.playPrevious()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        try {
+            requireActivity().unregisterReceiver(musicControlReceiver)
+        } catch (_: Exception) {}
     }
 
     private fun updateHeaderUI() {
@@ -456,3 +501,4 @@ class HomeFragment : Fragment() {
     }
 
 }
+

@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorBackground">#121212</color>
-    <color name="colorText">#FFFFFF</color>
-    <color name="colorPrimary">#BB86FC</color>
-    <color name="colorAccent">#03DAC6</color>
+
+    <!-- Primary Colors -->
+    <color name="colorPrimary">#FF784E</color>
+    <color name="colorPrimaryVariant">#FF5500</color>
+    <color name="colorOnPrimary">#000000</color>
+
+    <!-- Text Colors -->
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="textColorSecondary">#BBBBBB</color>
+
+    <!-- Background Colors -->
+    <color name="backgroundColor">#000000</color>
+    <color name="cardColor">#1E1E1E</color>
+
+
+    <!-- Other -->
+    <color name="search_box_background">#555555</color>
+    <color name="search_icon_dark">#000000</color>
+    <color name="tag_background_color">#E0E0E0</color>
+
 </resources>

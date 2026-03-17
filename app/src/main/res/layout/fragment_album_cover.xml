@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="12dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="32dp">
+
+        <!-- Vinyl Disc -->
+        <ImageView
+            android:id="@+id/imgVinyl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/vinyl_disc"
+            android:scaleType="fitCenter"
+            android:alpha="0.8"/>
+
+        <!-- Album Cover - No border, clean shadow -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="70dp"
+            app:cardCornerRadius="200dp"
+            app:cardElevation="16dp"
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:id="@+id/imgAlbumArt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_album_art"/>
+        </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>

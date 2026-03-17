@@ -24,5 +24,6 @@
         android:singleLine="false"
         android:scrollHorizontally="false"
         android:gravity="center"
-        android:breakStrategy="simple"/>
+        android:breakStrategy="simple"
+        android:textColor="?android:textColorPrimary" />
 </LinearLayout>

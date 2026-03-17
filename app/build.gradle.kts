@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("org.jetbrains.kotlin.kapt")
+    // ❌ Xóa kapt plugin
 }
 
 android {
@@ -36,24 +36,21 @@ android {
 }
 
 dependencies {
-// Retrofit + Gson
+    // Retrofit + Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-// OkHttp logging (xem log request/response cho dễ debug)
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
-// Glide (load ảnh coverImage)
     implementation("com.github.bumptech.glide:glide:4.16.0")
-//EXOPLAYER
     implementation("androidx.media3:media3-exoplayer:1.3.1")
     implementation("androidx.media:media:1.6.0")
     implementation("androidx.media3:media3-session:1.4.1")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-// ExoPlayer (Media3)
-//    others
-    // Room components
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
+    
+    // ❌ Xóa toàn bộ Room dependencies
+    // implementation("androidx.room:room-runtime:2.6.1")
+    // implementation("androidx.room:room-ktx:2.6.1")
+    // kapt("androidx.room:room-compiler:2.6.1")
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -62,4 +59,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
+    implementation("androidx.activity:activity-ktx:1.8.2")
 }

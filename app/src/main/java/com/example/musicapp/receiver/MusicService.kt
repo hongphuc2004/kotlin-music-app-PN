@@ -24,20 +24,21 @@ import com.example.musicapp.ui.player.PlayerHolder
 
 class MusicService : Service() {
 
-    // Dùng player chung từ PlayerHolder; khởi tạo fallback nếu chưa có
     private val player: ExoPlayer
         get() = PlayerHolder.player
 
-    private var isPlaying: Boolean = false
     private var currentSongTitle: String = "PN Music"
     private var currentSongArtist: String = "Now playing..."
+    private var currentSongCover: String? = null
+    
+    // Queue management
+    private var songQueue: MutableList<String> = mutableListOf()
+    private var currentIndex: Int = 0
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
 
-        // Nếu PlayerHolder.player chưa được khởi tạo (ví dụ user start service trực tiếp),
-        // khởi tạo 1 ExoPlayer và gán cho PlayerHolder
         val p = kotlin.runCatching { PlayerHolder.player }.getOrElse {
             PlayerHolder.player = ExoPlayer.Builder(this).build().apply {
                 setAudioAttributes(
@@ -47,14 +48,13 @@ class MusicService : Service() {
                         .build(),
                     true
                 )
+                setWakeMode(C.WAKE_MODE_NETWORK)
             }
             PlayerHolder.player
         }
 
-        // Lắng nghe player để cập nhật notification tự động khi có thay đổi
         p.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                this@MusicService.isPlaying = isPlayingNow
                 showMusicNotification()
             }
 
@@ -62,6 +62,12 @@ class MusicService : Service() {
                 mediaMetadata.title?.let { currentSongTitle = it.toString() }
                 mediaMetadata.artist?.let { currentSongArtist = it.toString() }
                 showMusicNotification()
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    playNext()
+                }
             }
         })
     }
@@ -96,11 +102,14 @@ class MusicService : Service() {
         val songTitleFromIntent = intent?.getStringExtra("SONG_TITLE")
         val songArtistFromIntent = intent?.getStringExtra("SONG_ARTIST")
         val songUrl = intent?.getStringExtra("SONG_URL")
+        val songCover = intent?.getStringExtra("SONG_COVER")
 
         when (action) {
             MusicActions.ACTION_PLAY -> {
-                // nếu truyền url + title thì load bài mới
                 if (!songUrl.isNullOrEmpty()) {
+                    currentSongTitle = songTitleFromIntent ?: "Unknown"
+                    currentSongArtist = songArtistFromIntent ?: "Unknown"
+                    currentSongCover = songCover
                     playNewSong(songUrl, songTitleFromIntent, songArtistFromIntent)
                 } else {
                     if (!player.isPlaying) player.play()
@@ -110,24 +119,35 @@ class MusicService : Service() {
                 if (player.isPlaying) player.pause()
             }
             MusicActions.ACTION_NEXT -> {
-                // TODO: logic next: nếu bạn có playlist, advance và player.play()
+                playNext()
             }
             MusicActions.ACTION_PREV -> {
-                // TODO: logic prev
+                playPrevious()
             }
             else -> {
-                // Start service with a song -> play it
                 if (!songUrl.isNullOrEmpty()) {
+                    currentSongTitle = songTitleFromIntent ?: "Unknown"
+                    currentSongArtist = songArtistFromIntent ?: "Unknown"
+                    currentSongCover = songCover
                     playNewSong(songUrl, songTitleFromIntent, songArtistFromIntent)
                 } else {
-                    // giữ notification hiện trạng
                     showMusicNotification()
                 }
             }
         }
 
-        // Service chạy foreground để notification luôn hiện
+        showMusicNotification()
         return START_STICKY
+    }
+
+    private fun playNext() {
+        // Broadcast to app to handle next song
+        sendBroadcast(Intent("com.example.musicapp.ACTION_NEXT_SONG"))
+    }
+
+    private fun playPrevious() {
+        // Broadcast to app to handle previous song
+        sendBroadcast(Intent("com.example.musicapp.ACTION_PREV_SONG"))
     }
 
     private fun playNewSong(url: String, title: String?, artist: String?) {
@@ -149,11 +169,8 @@ class MusicService : Service() {
 
     private fun showMusicNotification() {
         val isPlayingNow = kotlin.runCatching { player.isPlaying }.getOrDefault(false)
-        val meta = kotlin.runCatching { player.mediaMetadata }.getOrNull()
-        val title = meta?.title?.toString() ?: currentSongTitle
-        val artist = meta?.artist?.toString() ?: currentSongArtist
 
-        // Previous (gửi broadcast về receiver)
+        // Previous
         val prevIntent = Intent(this, MusicControlReceiver::class.java).apply {
             action = MusicActions.ACTION_PREV
         }
@@ -178,34 +195,28 @@ class MusicService : Service() {
         )
 
         val playPauseIcon = if (isPlayingNow) R.drawable.ic_pause else R.drawable.ic_play
-        val playPauseText = if (isPlayingNow) "Pause" else "Play"
-
-        val albumArtBitmap = getCurrentAlbumArt()
 
         val notificationBuilder = NotificationCompat.Builder(this, "music_channel")
-            .setContentTitle(title)
-            .setContentText(artist)
+            .setContentTitle(currentSongTitle)
+            .setContentText(currentSongArtist)
             .setSmallIcon(R.drawable.ic_default_album_art)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(isPlayingNow)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setStyle(MediaStyle().setShowActionsInCompactView(0, 1, 2))
             .addAction(R.drawable.ic_prev, "Previous", prevPendingIntent)
-            .addAction(playPauseIcon, playPauseText, playPausePendingIntent)
+            .addAction(playPauseIcon, "Play/Pause", playPausePendingIntent)
             .addAction(R.drawable.ic_next, "Next", nextPendingIntent)
 
-        albumArtBitmap?.let { notificationBuilder.setLargeIcon(it) }
-
-        val openAppIntent = packageManager.getLaunchIntentForPackage(packageName)
-        val contentPendingIntent = if (openAppIntent != null) {
-            PendingIntent.getActivity(this, 126, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        } else null
-        notificationBuilder.setContentIntent(contentPendingIntent)
+        // Load album art if available
+        if (!currentSongCover.isNullOrEmpty()) {
+            // TODO: Load from URL using Glide/Coil
+        }
 
         startForeground(1, notificationBuilder.build())
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // KHÔNG release PlayerHolder.player ở đây (nếu ViewModel vẫn dùng nó)
     }
 }

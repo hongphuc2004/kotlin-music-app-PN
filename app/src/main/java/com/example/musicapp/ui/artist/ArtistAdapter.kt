@@ -29,8 +29,8 @@ class ArtistAdapter(
             // load ảnh ca sĩ
             Glide.with(itemView.context)
                 .load(artist.coverImage)
-                .placeholder(R.drawable.ic_user)   // ảnh mặc định khi chưa load
-                .error(R.drawable.img_error)       // ảnh khi load lỗi
+                .placeholder(R.drawable.ic_user)
+                .error(R.drawable.img_error)
                 .centerCrop()
                 .into(ivCover)
 

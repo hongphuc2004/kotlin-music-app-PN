@@ -22,16 +22,14 @@ object PreferenceHelper {
     }
 
     // --- DARK MODE ---
-    fun isDarkMode(context: Context): Boolean {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_DARK_MODE, false)
-    }
-
     fun setDarkMode(context: Context, value: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putBoolean(KEY_DARK_MODE, value).apply()
     }
-
+    fun isDarkMode(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_DARK_MODE, false)
+    }
     fun applyTheme(context: Context) {
         val darkMode = isDarkMode(context)
         AppCompatDelegate.setDefaultNightMode(
@@ -66,4 +64,15 @@ object PreferenceHelper {
             .remove(KEY_AVATAR)
             .apply()
     }
+
+    fun saveBoolean(context: Context, key: String, value: Boolean) {
+        val sharedPref = context.getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        sharedPref.edit().putBoolean(key, value).apply()
+    }
+
+    fun getBoolean(context: Context, key: String, defaultValue: Boolean): Boolean {
+        val sharedPref = context.getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean(key, defaultValue)
+    }
+
 }

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/colorBackground">
+    android:background="@color/backgroundColor">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,29 +47,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Bài hát nổi bật"
+            android:textColor="@android:color/black"
             android:textSize="16sp"
             android:textStyle="bold"
             android:paddingBottom="8dp"
             android:layout_marginLeft="15dp"/>
 
         <!-- RecyclerView các bài hát (chiều dọc) -->
+
+        <!-- (Tuỳ chọn) nút Xem thêm nếu muốn giới hạn số bài hiện trước, ẩn khi ko cần -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvSongsByArtist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:clipToPadding="false"
-            android:paddingBottom="12dp"
             android:layout_marginLeft="15dp"
-            />
+            android:clipToPadding="false"
+            android:nestedScrollingEnabled="false"
+            android:paddingBottom="12dp" />
 
-        <!-- (Tuỳ chọn) nút Xem thêm nếu muốn giới hạn số bài hiện trước, ẩn khi ko cần -->
         <TextView
             android:id="@+id/btnShowMoreSong"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Xem thêm"
-            android:textColor="@color/purple_500"
+            android:textColor="@color/textColorPrimary"
             android:paddingTop="6dp"
             android:visibility="gone"/>
 

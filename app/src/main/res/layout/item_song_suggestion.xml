@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -12,7 +13,7 @@
         android:layout_height="48dp"
         android:scaleType="centerCrop"
         android:background="@drawable/shape_round_8dp"
-        android:clipToOutline="true"/>
+        android:clipToOutline="true" />
 
     <!-- Tên bài hát + ca sĩ -->
     <LinearLayout
@@ -30,7 +31,8 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:ellipsize="end"
-            android:maxLines="1"/>
+            android:maxLines="1"
+            android:textColor="?android:textColorPrimary" />
 
         <TextView
             android:id="@+id/txtArtist"
@@ -40,7 +42,7 @@
             android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
             android:ellipsize="end"
-            android:maxLines="1"/>
+            android:maxLines="1" />
     </LinearLayout>
 
     <!-- Menu more -->
@@ -50,5 +52,6 @@
         android:layout_height="36dp"
         android:src="@drawable/ic_more"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="More"/>
+        android:contentDescription="More"
+        app:tint="@color/textColorPrimary" />
 </LinearLayout>

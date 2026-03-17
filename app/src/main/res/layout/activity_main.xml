@@ -14,10 +14,10 @@
     <FrameLayout
         android:id="@+id/miniPlayerContainer"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="80dp"
         android:layout_above="@id/bottomNav"
         android:visibility="gone"
-        android:background="@color/white" />
+        android:background="@android:color/transparent" />
 
     <!-- Thanh navigation dưới -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

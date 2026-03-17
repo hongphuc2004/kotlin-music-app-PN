@@ -1,6 +1,5 @@
 package com.example.musicapp.network
 
-import com.example.musicapp.models.artists.Artist
 import com.example.musicapp.models.artists.ArtistDetailResponse
 import com.example.musicapp.models.artists.ArtistResponse
 import com.example.musicapp.models.auth.ApiResponse
@@ -18,7 +17,6 @@ import com.example.musicapp.models.songs.Song
 import com.example.musicapp.models.songs.SongListResponse
 import com.example.musicapp.models.songs.SongResponse
 import com.example.musicapp.models.users.ChangePasswordRequest
-import com.example.musicapp.models.users.UpdateMeRequest
 import com.example.musicapp.models.users.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -33,9 +31,19 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import com.example.musicapp.models.AddCommentRequest
+import com.example.musicapp.models.AddCommentResponse
+import com.example.musicapp.models.CommentResponse
+import com.example.musicapp.models.chat.ChatHistoryResponse
+import com.example.musicapp.models.topic.TopicResponse
+import com.example.musicapp.models.chat.ChatRequest
+import com.example.musicapp.models.chat.ChatResponse
+import com.example.musicapp.models.chat.AIChatMessage
+import com.example.musicapp.models.chat.PlaylistSuggestion
+import com.example.musicapp.models.chat.SavePlaylistResponse
 
 interface ApiService {
-//  Phan cho authentication
+    // Authentication
     @POST("auth/sign-up")
     fun signUp(@Body request: SignUpRequest): Call<ApiResponse>
 
@@ -44,8 +52,7 @@ interface ApiService {
     @POST("auth/logout")
     fun logout(): Call<ApiResponse>
 
-
-//  Phan cho thong tin ca nhan
+    // User profile
     @GET("user/me")
     fun getUserProfile(): Call<UserResponse>
     @Multipart
@@ -59,15 +66,13 @@ interface ApiService {
     @PUT("user/me/change-password")
     fun changePassword(@Body request: ChangePasswordRequest): Call<UserResponse>
 
-//    Phan cho Song
+    // Song
     @GET("/music/songs")
-    fun getSongs():Call<ApiListResponse<Song>>
+    fun getSongs(): Call<ApiListResponse<Song>>
     @GET("/music/songs/{id}")
-    fun getSongDetail(@Path("id") id:String): Call<SongResponse>
+    fun getSongDetail(@Path("id") id: String): Call<SongResponse>
 
-
-
-//    Phan cho Playlist
+    // Playlist
     @GET("user/me/playlists")
     suspend fun getMyPlaylists(): PlaylistResponse
 
@@ -79,7 +84,8 @@ interface ApiService {
 
     @GET("playlist/{id}")
     fun getPlaylistDetail(@Path("id") playlistId: String): Call<PlaylistDetailResponse>
-// Phan cho arist
+
+    // Artist
     @GET("music/artists")
     fun getHotArtists(): Call<ArtistResponse>
 
@@ -102,7 +108,34 @@ interface ApiService {
     @DELETE("favorite-songs")
     fun removeAllFavoriteSongs(): Call<ApiResponse>
 
-    // Phan cho Artist
+    // Artist Detail
     @GET("artist/{id}")
     fun getArtistDetail(@Path("id") id: String): Call<ArtistDetailResponse>
+
+    // Comment endpoints
+    @GET("comments/{songId}")
+    suspend fun getComments(@Path("songId") songId: String): Response<CommentResponse>
+
+    @POST("comments")
+    suspend fun addComment(@Body request: AddCommentRequest): Response<AddCommentResponse>
+
+    @DELETE("comments/{commentId}")
+    suspend fun deleteComment(@Path("commentId") commentId: String): Response<AddCommentResponse>
+
+    @POST("comments/{commentId}/like")
+    suspend fun likeComment(@Path("commentId") commentId: String): Response<AddCommentResponse>
+
+    // Topics
+    @GET("music/topics")
+    fun getTopics(): Call<TopicResponse>
+
+    // Chat
+    @POST("api/chat/message")
+    suspend fun sendChatMessage(@Body request: ChatRequest): ChatResponse
+
+    @GET("api/chat/history")
+    suspend fun getChatHistory(): ChatHistoryResponse
+
+    @POST("api/chat/playlist/save")
+    suspend fun saveSuggestedPlaylist(@Body playlist: PlaylistSuggestion): SavePlaylistResponse
 }

@@ -48,7 +48,7 @@ class FavoriteSongAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongVH {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_song_with_heart, parent, false)
+            .inflate(R.layout.item_song, parent, false)
         return SongVH(view)
     }
 
@@ -56,14 +56,10 @@ class FavoriteSongAdapter(
         try {
             val song = items[position]
 
-            // Số thứ tự
             holder.tvRank.text = (position + 1).toString()
-
-            // Title + Artist
             holder.txtTitle.text = song.title
-            holder.txtArtist.text = song.artist.fullName
+            holder.txtArtist.text = song.artist.joinToString(", ") { it.fullName }
 
-            // Load ảnh cover
             Glide.with(holder.itemView)
                 .load(song.coverImage)
                 .placeholder(R.drawable.ic_default_album_art)
@@ -71,25 +67,13 @@ class FavoriteSongAdapter(
                 .centerCrop()
                 .into(holder.imgCover)
 
-            // Update heart icon based on favorite status
+            // 👇 Update heart icon
             updateHeartIcon(holder, song._id)
 
-            // Click vào item → mở mini player
-            holder.itemView.setOnClickListener {
-                (holder.itemView.context as? MainActivity)?.showMiniPlayer(song)
-            }
+            holder.itemView.setOnClickListener { onClick(song) }
+            holder.btnHeart.setOnClickListener { onHeartClick?.invoke(song) }
+            holder.btnAdd.setOnClickListener { onAddToPlaylistClick?.invoke(song) }
 
-            // Heart click - toggle favorite
-            holder.btnHeart.setOnClickListener {
-                onHeartClick?.invoke(song)
-            }
-
-            // Nút + - add to playlist
-            holder.btnAdd.setOnClickListener {
-                onAddToPlaylistClick?.invoke(song)
-            }
-
-            // Nút menu (...)
             holder.btnMore.setOnClickListener { view ->
                 val popup = android.widget.PopupMenu(view.context, view)
                 popup.inflate(R.menu.song_item_menu)

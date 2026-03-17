@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:text="Artist Name"
             android:textSize="12sp"
-            android:textColor="#777777"
+            android:textColor="?android:textColorPrimary"
             android:ellipsize="end"
             android:maxLines="1"/>
     </LinearLayout>

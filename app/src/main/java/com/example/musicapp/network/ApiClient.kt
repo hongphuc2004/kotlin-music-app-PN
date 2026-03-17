@@ -1,8 +1,16 @@
 package com.example.musicapp.network
 
 import android.content.Context
+import com.example.musicapp.models.artists.Artist
+import com.example.musicapp.models.songs.ArtistDeserializer
+import com.example.musicapp.models.songs.Song
+import com.example.musicapp.models.songs.SongDeserializer
+import com.example.musicapp.models.songs.SongForArtist
+import com.example.musicapp.models.songs.SongForArtistDeserializer
 import com.example.musicapp.models.users.UserResponse
 import com.example.musicapp.utils.CookieManager
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
@@ -12,14 +20,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    //    how to use buildConfig
     private const val BASE_URL = "https://api-be-music-2.onrender.com/"
-//    private const val BASE_URL = "http://192.168.106.153:3000/"
-//    private const val BASE_URL = "http://10.0.2.2:3000/" ;
+//    private const val BASE_URL = "http://10.0.2.2:3000/"
 
     var cookieManager: CookieManager? = null
-
-    // Lưu thông tin user hiện tại sau khi login
     var currentUser: UserResponse? = null
 
     fun init(context: Context) {
@@ -49,6 +53,16 @@ object ApiClient {
         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
     }
 
+    // 👇 QUAN TRỌNG: Gson với ArtistDeserializer
+    private val gson by lazy {
+        android.util.Log.d("ApiClient", "=== Creating Gson with custom deserializers ===")
+        GsonBuilder()
+            .registerTypeAdapter(Song::class.java, SongDeserializer())
+            .registerTypeAdapter(SongForArtist::class.java, SongForArtistDeserializer())
+            .setLenient()
+            .create()
+    }
+
     private val okHttp by lazy {
         OkHttpClient.Builder()
             .addInterceptor(logging)
@@ -57,11 +71,13 @@ object ApiClient {
             .build()
     }
 
+    // 👇 PHẢI dùng gson custom ở đây
     val api: ApiService by lazy {
+        android.util.Log.d("ApiClient", "=== Creating ApiService with custom Gson ===")
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttp)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson)) // 👈 Dùng gson custom
             .build()
             .create(ApiService::class.java)
     }

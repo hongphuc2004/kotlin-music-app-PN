@@ -45,7 +45,6 @@ class ProfileDetailFragment : Fragment() {
     //Ham chuyen doi uri sang file
     private fun uriToFile(uri: Uri): File {
         val contentResolver = requireContext().contentResolver
-        // thử lấy mime
         val mime = contentResolver.getType(uri) ?: "image/jpeg"
         val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "jpg"
         val file = File(requireContext().cacheDir, "upload_${System.currentTimeMillis()}.$extension")
@@ -65,7 +64,6 @@ class ProfileDetailFragment : Fragment() {
     ) { uri: Uri? ->
         if (uri != null) {
             selectedAvatarUri = uri
-            // Cập nhật preview cho ImageView trong dialog (nếu đang mở)
             currentAvatarPreview?.setImageURI(uri)
         }
     }

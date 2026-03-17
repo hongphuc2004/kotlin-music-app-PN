@@ -1,7 +1,6 @@
 package com.example.musicapp
 
 import android.content.Intent
-import com.example.musicapp.receiver.MusicActions
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.musicapp.models.songs.Song
-import com.example.musicapp.receiver.MusicService
+import com.example.musicapp.services.MediaService
 import com.example.musicapp.ui.home.HomeFragment
 import com.example.musicapp.ui.library.LibraryFragment
 import com.example.musicapp.ui.player.MiniPlayerFragment
@@ -25,12 +24,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyUiFor(fragment: Fragment?) {
         val bottom = findViewById<BottomNavigationView>(R.id.bottomNav)
-        val miniPlayer = findViewById<View>(R.id.miniPlayerContainer)
         when (fragment) {
-            is HomeFragment -> {
-                bottom.visibility = View.VISIBLE
-            }
-            is SearchFragment -> {
+            is HomeFragment, is SearchFragment, is com.example.musicapp.ui.chat.AIChatFragment, is LibraryFragment -> {
                 bottom.visibility = View.VISIBLE
             }
             else -> {
@@ -64,41 +59,24 @@ class MainActivity : AppCompatActivity() {
 
         playerVM.currentSong.observe(this) { song ->
             val miniPlayer = findViewById<View>(R.id.miniPlayerContainer)
-            miniPlayer.visibility =
-                if (song != null) View.VISIBLE else View.GONE
+            miniPlayer.visibility = if (song != null) View.VISIBLE else View.GONE
         }
-        setupBottomNav()
+        
+        setupBottomNavigation()
     }
 
-    /**
-     * Hàm load fragment vào container chính
-     */
-    private fun loadFragment(fragment: Fragment, tag: String, addToBackStack: Boolean = false) {
+    private fun loadFragment(fragment: Fragment, tag: String = "") {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
         if (currentFragment != null && currentFragment::class == fragment::class) {
             return
         }
 
-        val transaction = supportFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left,
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
+        supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment, tag)
-
-        if (addToBackStack) {
-            transaction.addToBackStack(tag)
-        }
-
-        transaction.commit()
+            .commit()
     }
 
-    /**
-     * Setup bottom navigation (Home - Search - Library)
-     */
-    private fun setupBottomNav() {
+    private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -107,11 +85,15 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_search -> {
-                    loadFragment(SearchFragment(), "SEARCH", addToBackStack = true)
+                    loadFragment(SearchFragment(), "SEARCH")
+                    true
+                }
+                R.id.nav_ai_chat -> {
+                    loadFragment(com.example.musicapp.ui.chat.AIChatFragment(), "AI_CHAT")
                     true
                 }
                 R.id.nav_library -> {
-                    loadFragment(LibraryFragment(), "LIBRARY", addToBackStack = true)
+                    loadFragment(LibraryFragment(), "LIBRARY")
                     true
                 }
                 else -> false
@@ -119,16 +101,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Hàm public cho Adapter/Fragment gọi để phát nhạc
-     */
     fun showMiniPlayer(song: Song) {
-        playerVM.play(song)
-        val intent = Intent(this, MusicService::class.java).apply {
-            action = MusicActions.ACTION_PLAY
+        playerVM.play(song, listOf(song))
+        
+        val artistName = song.artist.firstOrNull()?.fullName ?: "Unknown Artist"
+        
+        val intent = Intent(this, MediaService::class.java).apply {
+            action = MediaService.ACTION_PLAY
             putExtra("SONG_TITLE", song.title)
-            putExtra("SONG_ARTIST", song.artist.fullName)
+            putExtra("SONG_ARTIST", artistName)
             putExtra("SONG_URL", song.fileUrl)
+            putExtra("SONG_COVER", song.coverImage)
+            putExtra("SONG_ID", song._id)
         }
         ContextCompat.startForegroundService(this, intent)
     }
